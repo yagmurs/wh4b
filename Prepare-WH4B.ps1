@@ -32,7 +32,15 @@ Install-Module ADCSTemplate
 
 
 #Configure Domain Controller Certificates
-Export-ADCSTemplate -DisplayName foo > .\foo.json
+Set-ExecutionPolicy Unrestricted
+Install-Module adcstemplate
+
+$deploymetSource = "C:\W4HbDeployment"
+
+New-Item -Path $deploymetSource -ItemType Directory -Force
+Set-Location -Path $deploymetSource
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yagmurs/wh4b/master/wh4b-adcs-dc-template.json" -OutFile $deploymetSource\wh4b-adcs-dc-template.json
+New-ADCSTemplate -DisplayName "Domain Controller Authentication (Kerberos)" -JSON (Get-Content -Path C:\W4HbDeployment\wh4b-adcs-dc-template.json -Raw) 
 
 #Superseding the existing Domain Controller certificate
 #Configure an Internal Web Server Certificate template
