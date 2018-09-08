@@ -41,6 +41,9 @@ Export-ADCSTemplate -DisplayName foo > .\foo.json
 #Configure Domain Controllers for Automatic Certificate Enrollment
 #Deploy the Domain Controller Auto Certificate Enrollment Group Policy Object
 #Prepare and Deploy Windows Server 2016 Active Directory Federation Services
-Install-AdfsFarm -CertificateThumbprint 8169c52b4ec6e77eb2ae17f028fe5da4e35c0bed -FederationServiceName fs.corp.contoso.com -GroupServiceAccountIdentifier CONTOSO\GroupAccount01
+$CertificateThumbprint = ""
+$FederationServiceName = "sts.corp.contoso.com"
+$GroupManagedServiceAccount = "CONTOSO\gmsa_ADFS"
+Install-AdfsFarm -CertificateThumbprint $CertificateThumbprint -FederationServiceName $FederationServiceName -GroupServiceAccountIdentifier $GroupManagedServiceAccount
 #Validate and Deploy Multifactor Authentication Services (MFA)
 #Configure Windows Hello for Business Policy settings
