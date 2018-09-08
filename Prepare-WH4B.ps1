@@ -34,7 +34,7 @@ New-Item -Path $deploymentSource -ItemType Directory -Force
 Set-Location -Path $deploymentSource
 
 #Configure Domain Controller Certificates
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yagmurs/wh4b/master/wh4b-adcs-dc-template.json" -OutFile $deploymentSource\wh4b-adcs-dc-template.json
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yagmurs/wh4b/master/certificate-templates/wh4b-adcs-dc-template.json" -OutFile "$deploymentSource\wh4b-adcs-dc-template.json"
 New-ADCSTemplate -DisplayName "Domain Controller Authentication (Kerberos)" -JSON (Get-Content -Path $deploymentSource\wh4b-adcs-dc-template.json -Raw) -Identity "$domainNetBIOS\domain controllers" -AutoEnroll
 
 #Superseding the existing Domain Controller Certificate
