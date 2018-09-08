@@ -31,12 +31,13 @@ Install-Module ADCSTemplate
 
 #Create Working Directory
 $deploymentSource = "C:\WH4BDeployment"
+$domainNetBIOS = "CORP"
 New-Item -Path $deploymentSource -ItemType Directory -Force
 Set-Location -Path $deploymentSource
 
 #Configure Domain Controller Certificates
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yagmurs/wh4b/master/wh4b-adcs-dc-template.json" -OutFile $deploymentSource\wh4b-adcs-dc-template.json
-New-ADCSTemplate -DisplayName "Domain Controller Authentication (Kerberos)" -JSON (Get-Content -Path $deploymentSource\wh4b-adcs-dc-template.json -Raw) 
+New-ADCSTemplate -DisplayName "Domain Controller Authentication (Kerberos)" -JSON (Get-Content -Path $deploymentSource\wh4b-adcs-dc-template.json -Raw) -Identity "$domainNetBIOS\domain controllers" -AutoEnroll
 
 #Superseding the existing Domain Controller Certificate
 #Configure an Internal Web Server Certificate template
