@@ -38,12 +38,21 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yagmurs/wh4b/master/wh
 New-ADCSTemplate -DisplayName "Domain Controller Authentication (Kerberos)" -JSON (Get-Content -Path $deploymentSource\wh4b-adcs-dc-template.json -Raw) -Identity "$domainNetBIOS\domain controllers" -AutoEnroll
 
 #Superseding the existing Domain Controller Certificate
-#Configure an Internal Web Server Certificate template
+Write-Host "Superseed following certificate templates, Kerberos Authentication, Domain Controller, and Domain Controller Authentication" -ForegroundColor Yellow
 #Unpublish Superseded Certificate Templates
+Write-Host "Unpublish Kerberos Authentication, Domain Controller, and Domain Controller Authentication templates from all CAs." -ForegroundColor Yellow
 #Publish Certificate Templates to the Certificate Authority
+Write-Host "Publish Domain Controller Authentication (Kerberos) template to all CAs." -ForegroundColor Yellow
+
+
+#Configure an Internal Web Server Certificate template (Optional)
+
 #Configure Domain Controllers for Automatic Certificate Enrollment
+
 #Deploy the Domain Controller Auto Certificate Enrollment Group Policy Object
 #Prepare and Deploy Windows Server 2016 Active Directory Federation Services
+$adfsServerName = ""
+#Import Certificate to ADFS Server
 $certificateThumbprint = ""
 $federationServiceName = "sts.corp.contoso.com"
 $groupManagedServiceAccount = "CONTOSO\gmsa_ADFS"
