@@ -1,6 +1,4 @@
 ﻿#IP Prerequisites
-#Templateleri export et
-#Hersey GITHUB koy, download et
 #Download and install RSAT
 #Deployment Type
 #Windows Version
