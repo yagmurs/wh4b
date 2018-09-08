@@ -39,14 +39,15 @@ Install-Module ADCSTemplate
 $deploymentSource = "C:\WH4BDeployment"
 New-Item -Path $deploymentSource -ItemType Directory -Force
 Set-Location -Path $deploymentSource
-$dcCertificateTemplateName = "Domain Controller Authentication (Kerberos)"
+$dcCertificateTemplateDisplayName = "Domain Controller Authentication (Kerberos)"
+$dcCertificateTemplateName = (-split $dcCertificateTemplateDisplayName) -join ""
 
 #Configure Domain Controller Certificates
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yagmurs/wh4b/master/certificate-templates/wh4b-adcs-dc-template.json" -OutFile "$deploymentSource\wh4b-adcs-dc-template.json"
-New-ADCSTemplate -DisplayName $dcCertificateTemplateName -JSON (Get-Content -Path $deploymentSource\wh4b-adcs-dc-template.json -Raw) -Identity "$domainNetBIOS\domain controllers" -AutoEnroll
+New-ADCSTemplate -DisplayName $dcCertificateTemplateDisplayName -JSON (Get-Content -Path $deploymentSource\wh4b-adcs-dc-template.json -Raw) -Identity "$domainNetBIOS\domain controllers" -AutoEnroll
 
 #Superseding the existing Domain Controller Certificate
-Read-Host "Superseed following certificate templates on $dcCertificateTemplateName.... Kerberos Authentication, Domain Controller, and Domain Controller Authentication"
+Read-Host "Superseed following certificate templates on $dcCertificateTemplateDisplayName.... Kerberos Authentication, Domain Controller, and Domain Controller Authentication"
 #Unpublish Superseded Certificate Templates
 Enter-PSSession -ComputerName $caServerName
 Get-CaTemplate
@@ -56,7 +57,7 @@ Remove-CAtemplate -Name "DomainControllerAuthentication"
 exit
 #Publish Certificate Templates to the Certificate Authority
 Enter-PSSession -ComputerName $caServerName
-Add-CATemplate -Name "DomainControllerAuthentication(Kerberos)"
+Add-CATemplate -Name $dcCertificateTemplateName -Confirm:$false
 exit
 Read-Host "Publish Domain Controller Authentication (Kerberos) template to all CAs."
 
