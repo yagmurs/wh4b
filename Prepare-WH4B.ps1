@@ -6,13 +6,23 @@
 #Schema Version
 #etc...
 #global variables
+#Domain FQDN - CHANGE THIS!!!!!!!!!
 $domainFQDN = "corp.toynak.club"
+#Domain Distinguished Name, change if not correct
 $domainDistinguishedName = "DC=" + ($domainFQDN.Split(".") -join ",DC=")
+#Domain NetBIOS name, change if not correct
 $domainNetBIOS = $domainFQDN.Split(".")[0]
-$caServerName = "ca1.$domainFQDN"
+#Certificate Authority for Domain Controller Certificates
+$caServerNameDC = "ca1.$domainFQDN"
+#Certificate Authority for Windows Hello for Business Certificates(User and Enrollment)
+$caServerNameWH4B = "ca1.$domainFQDN"
+#ADFS Server Name
 $adfsServerName = "adfs1.$domainFQDN"
+#ADFS Service Communication Certificate Thumbprint
 $certificateThumbprint = ""
+#ADFS Server Communication Name
 $federationServiceName = "sts.toynak.club"
+#ADFS Server Group Managed Service Account name
 $groupManagedServiceAccount = "corp\gmsa_ADFS$"
 
 #Create the KeyCredential Admins Security Global Group
@@ -45,20 +55,20 @@ Set-Location -Path $deploymentSource
 $dcCertificateTemplateDisplayName = "Domain Controller Authentication (Kerberos)"
 $dcCertificateTemplateName = (-split $dcCertificateTemplateDisplayName) -join ""
 $wh4bUserCertificateTemplateDisplayName = "WH4B Authentication"
-#$wh4bUserCertificateTemplateName = (-split $wh4bUserCertificateTemplateDisplayName) -join ""
+$wh4bUserCertificateTemplateName = (-split $wh4bUserCertificateTemplateDisplayName) -join ""
 $wh4bEnrollmentCertificateTemplateDisplayName = "WH4B Enrollment Agent"
-#$wh4bEnrollmentCertificateTemplateName = (-split $wh4bEnrollmentCertificateTemplateDisplayName) -join ""
+$wh4bEnrollmentCertificateTemplateName = (-split $wh4bEnrollmentCertificateTemplateDisplayName) -join ""
 
 #Configure Domain Controller Certificates
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yagmurs/wh4b/master/certificate-templates/wh4b-adcs-dc-template.json" -OutFile "$deploymentSource\wh4b-adcs-dc-template.json"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yagmurs/wh4b/master/resources/certificate-templates/wh4b-adcs-dc-template.json" -OutFile "$deploymentSource\wh4b-adcs-dc-template.json"
 New-ADCSTemplate -DisplayName $dcCertificateTemplateDisplayName -JSON (Get-Content -Path $deploymentSource\wh4b-adcs-dc-template.json -Raw) -Identity "$domainNetBIOS\domain controllers" -AutoEnroll
 
 #Configure WH4B User Certificates
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yagmurs/wh4b/master/certificate-templates/wh4b-adcs-wh4b-user-template.json" -OutFile "$deploymentSource\wh4b-adcs-wh4b-user-template.json"
-New-ADCSTemplate -DisplayName $wh4bUserCertificateTemplateDisplayName -JSON (Get-Content -Path $deploymentSource\wh4b-adcs-wh4b-user-template.json -Raw) -Identity "$domainNetBIOS\Windows Hello for Business Users"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yagmurs/wh4b/master/resources/certificate-templates/wh4b-adcs-wh4b-user-template.json" -OutFile "$deploymentSource\wh4b-adcs-wh4b-user-template.json"
+New-ADCSTemplate -DisplayName $wh4bUserCertificateTemplateDisplayName -JSON (Get-Content -Path $deploymentSource\wh4b-adcs-wh4b-user-template.json -Raw) -Identity "$domainNetBIOS\WH4BUsers"
 
 #Configure WH4B Enrollment Certificates
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yagmurs/wh4b/master/certificate-templates/wh4b-adcs-wh4b-enrollment-template.json" -OutFile "$deploymentSource\wh4b-adcs-wh4b-enrollment-template.json"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yagmurs/wh4b/master/resources/certificate-templates/wh4b-adcs-wh4b-enrollment-template.json" -OutFile "$deploymentSource\wh4b-adcs-wh4b-enrollment-template.json"
 New-ADCSTemplate -DisplayName $wh4bEnrollmentCertificateTemplateDisplayName -JSON (Get-Content -Path $deploymentSource\wh4b-adcs-wh4b-enrollment-template.json -Raw) -Identity "$groupManagedServiceAccount"
 
 
@@ -66,15 +76,19 @@ New-ADCSTemplate -DisplayName $wh4bEnrollmentCertificateTemplateDisplayName -JSO
 #Superseding the existing Domain Controller Certificate
 Read-Host "Superseed following certificate templates on $dcCertificateTemplateDisplayName.... Kerberos Authentication, Domain Controller, and Domain Controller Authentication"
 #Unpublish Superseded Certificate Templates
-Enter-PSSession -ComputerName $caServerName
+Enter-PSSession -ComputerName $caServerNameDC
 Get-CaTemplate
 Remove-CAtemplate -Name "KerberosAuthentication"
 Remove-CAtemplate -Name "DomainController"
 Remove-CAtemplate -Name "DomainControllerAuthentication"
 exit
 #Publish Certificate Templates to the Certificate Authority
-Enter-PSSession -ComputerName $caServerName
+Enter-PSSession -ComputerName $caServerNameDC
 Add-CATemplate -Name $dcCertificateTemplateName -Confirm:$false
+exit
+Enter-PSSession -ComputerName $caServerNameWH4B
+Add-CATemplate -Name $wh4bUserCertificateTemplateName -Confirm:$false
+Add-CATemplate -Name $wh4bEnrollmentCertificateTemplateName -Confirm:$false
 exit
 Write-Host "Publish Domain Controller Authentication (Kerberos) template to appropriate CAs."
 
