@@ -44,10 +44,19 @@ New-Item -Path $deploymentSource -ItemType Directory -Force
 Set-Location -Path $deploymentSource
 $dcCertificateTemplateDisplayName = "Domain Controller Authentication (Kerberos)"
 $dcCertificateTemplateName = (-split $dcCertificateTemplateDisplayName) -join ""
+$wh4bCertificateTemplateDisplayName = "WH4B Authentication"
+$wh4bCertificateTemplateName = (-split $dcCertificateTemplateDisplayName) -join ""
 
 #Configure Domain Controller Certificates
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yagmurs/wh4b/master/certificate-templates/wh4b-adcs-dc-template.json" -OutFile "$deploymentSource\wh4b-adcs-dc-template.json"
 New-ADCSTemplate -DisplayName $dcCertificateTemplateDisplayName -JSON (Get-Content -Path $deploymentSource\wh4b-adcs-dc-template.json -Raw) -Identity "$domainNetBIOS\domain controllers" -AutoEnroll
+
+#Configure WH4B User Certificates
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yagmurs/wh4b/master/certificate-templates/wh4b-adcs-wh4b-template.json" -OutFile "$deploymentSource\wh4b-adcs-dc-template.json"
+New-ADCSTemplate -DisplayName $wh4bCertificateTemplateDisplayName -JSON (Get-Content -Path $deploymentSource\wh4b-adcs-wh4b-template.json -Raw) -Identity "$domainNetBIOS\Windows Hello for Business Users"
+
+
+
 
 #Superseding the existing Domain Controller Certificate
 Read-Host "Superseed following certificate templates on $dcCertificateTemplateDisplayName.... Kerberos Authentication, Domain Controller, and Domain Controller Authentication"
