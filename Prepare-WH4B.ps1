@@ -12,8 +12,8 @@ $domainNetBIOS = $domainFQDN.Split(".")[0]
 $caServerName = "ca1.$domainFQDN"
 $adfsServerName = "adfs1.$domainFQDN"
 $certificateThumbprint = ""
-$federationServiceName = "sts.corp.contoso.com"
-$groupManagedServiceAccount = "CONTOSO\gmsa_ADFS"
+$federationServiceName = "sts.toynak.club"
+$groupManagedServiceAccount = "corp\gmsa_ADFS$"
 
 #Create the KeyCredential Admins Security Global Group
 $keyCredentialGroupOUdn = "CN=Users,$domainDistinguishedName"
@@ -85,8 +85,14 @@ Read-Host "Import ADFS Service Communication certificate to ADFS server."
 #Group Manages Service Account creation
 Add-KdsRootKey -EffectiveTime (Get-Date).AddHours(-10)
 #Import Certificate to ADFS Server
+Enter-PSSession -ComputerName $adfsServerName
 Install-WindowsFeature Adfs-Federation –IncludeManagementTools
 Install-AdfsFarm -CertificateThumbprint $certificateThumbprint -FederationServiceName $federationServiceName -GroupServiceAccountIdentifier $groupManagedServiceAccount
-
+exit
+#Add ADFS Service account to groups
+$gmsaString = ($groupManagedServiceAccount.Split("\")[1]).replace("$","")
+$gmsaObject = Get-ADObject -Filter 'name -eq $gmsaString'
+Add-ADGroupMember - identity "KeyCredentialAdmins" -Members $gmsaObject
+Add-ADGroupMember - identity "WH4BUsers" -Members $gmsaObject
 #Validate and Deploy Multifactor Authentication Services (MFA)
 #Configure Windows Hello for Business Policy settings
