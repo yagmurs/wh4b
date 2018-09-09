@@ -59,7 +59,7 @@ New-ADCSTemplate -DisplayName $wh4bUserCertificateTemplateDisplayName -JSON (Get
 
 #Configure WH4B Enrollment Certificates
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yagmurs/wh4b/master/certificate-templates/wh4b-adcs-wh4b-enrollment-template.json" -OutFile "$deploymentSource\wh4b-adcs-wh4b-enrollment-template.json"
-New-ADCSTemplate -DisplayName $wh4bEnrollmentCertificateTemplateDisplayName -JSON (Get-Content -Path $deploymentSource\wh4b-adcs-wh4b-enrollment-template.json -Raw) -Identity "$domainNetBIOS\Windows Hello for Business Users"
+New-ADCSTemplate -DisplayName $wh4bEnrollmentCertificateTemplateDisplayName -JSON (Get-Content -Path $deploymentSource\wh4b-adcs-wh4b-enrollment-template.json -Raw) -Identity "$groupManagedServiceAccount"
 
 
 
