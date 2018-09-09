@@ -59,7 +59,7 @@ exit
 Enter-PSSession -ComputerName $caServerName
 Add-CATemplate -Name $dcCertificateTemplateName -Confirm:$false
 exit
-Read-Host "Publish Domain Controller Authentication (Kerberos) template to all CAs."
+Write-Host "Publish Domain Controller Authentication (Kerberos) template to appropriate CAs."
 
 
 #Configure an Internal Web Server Certificate template (Optional)
@@ -79,11 +79,14 @@ New-GPLink -Guid $newGPO.ID -Target "OU=domain controllers,$domainDistinguishedN
 
 #Prepare and Deploy Windows Server 2016 Active Directory Federation Services
 $adfsServerName = ""
+#Group Manages Service Account creation
+Add-KdsRootKey -EffectiveTime (Get-Date).AddHours(-10)
 #Import Certificate to ADFS Server
 $certificateThumbprint = ""
 $federationServiceName = "sts.corp.contoso.com"
 $groupManagedServiceAccount = "CONTOSO\gmsa_ADFS"
 Install-WindowsFeature Adfs-Federation –IncludeManagementTools
 Install-AdfsFarm -CertificateThumbprint $certificateThumbprint -FederationServiceName $federationServiceName -GroupServiceAccountIdentifier $groupManagedServiceAccount
+
 #Validate and Deploy Multifactor Authentication Services (MFA)
 #Configure Windows Hello for Business Policy settings
