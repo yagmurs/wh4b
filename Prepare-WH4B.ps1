@@ -78,7 +78,7 @@ Import-GPO -BackupId $gpoGuid -TargetName $dcGPOName -Path "$deploymentSource\$d
 New-GPLink -Guid $newGPO.ID -Target "OU=domain controllers,$domainDistinguishedName"
 
 #Prepare and Deploy Windows Server 2016 Active Directory Federation Services
-$adfsServerName = ""
+Read-Host "Import ADFS Service Communication certificate to ADFS server."
 #Group Manages Service Account creation
 Add-KdsRootKey -EffectiveTime (Get-Date).AddHours(-10)
 #Import Certificate to ADFS Server
