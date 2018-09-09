@@ -56,6 +56,7 @@ $adfsServerName = ""
 $certificateThumbprint = ""
 $federationServiceName = "sts.corp.contoso.com"
 $groupManagedServiceAccount = "CONTOSO\gmsa_ADFS"
+Install-WindowsFeature Adfs-Federation –IncludeManagementTools
 Install-AdfsFarm -CertificateThumbprint $certificateThumbprint -FederationServiceName $federationServiceName -GroupServiceAccountIdentifier $groupManagedServiceAccount
 #Validate and Deploy Multifactor Authentication Services (MFA)
 #Configure Windows Hello for Business Policy settings
