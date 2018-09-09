@@ -123,6 +123,15 @@ exit
 certutil –dsTemplate $wh4bUserCertificateTemplateName msPKI-Private-Key-Flag +CTPRIVATEKEY_FLAG_HELLO_LOGON_KEY
 Set-AdfsCertificateAuthority -EnrollmentAgent -EnrollmentAgentCertificateTemplate $wh4bEnrollmentCertificateTemplateName -WindowsHelloCertificateTemplate $wh4bUserCertificateTemplateName
 
+
+#Configure the Device Registration Service
+#Sign-in the federation server with Enterprise Admin equivalent credentials. These instructions assume you are configuring the first federation server in a federation server farm.
+
+#Open the AD FS management console.
+#In the navigation pane, expand Service. Click Device Registration.
+#In the details pane, click Configure Device Registration.
+#In the Configure Device Registration dialog, click OK.
+
 #Add ADFS Service account to groups
 $gmsaString = ($groupManagedServiceAccount.Split("\")[1]).replace("$","")
 $gmsaObject = Get-ADObject -Filter 'name -eq $gmsaString'
