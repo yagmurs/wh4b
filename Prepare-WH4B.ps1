@@ -44,17 +44,22 @@ New-Item -Path $deploymentSource -ItemType Directory -Force
 Set-Location -Path $deploymentSource
 $dcCertificateTemplateDisplayName = "Domain Controller Authentication (Kerberos)"
 $dcCertificateTemplateName = (-split $dcCertificateTemplateDisplayName) -join ""
-$wh4bCertificateTemplateDisplayName = "WH4B Authentication"
-$wh4bCertificateTemplateName = (-split $dcCertificateTemplateDisplayName) -join ""
+$wh4bUserCertificateTemplateDisplayName = "WH4B Authentication"
+#$wh4bUserCertificateTemplateName = (-split $wh4bUserCertificateTemplateDisplayName) -join ""
+$wh4bEnrollmentCertificateTemplateDisplayName = "WH4B Enrollment Agent"
+#$wh4bEnrollmentCertificateTemplateName = (-split $wh4bEnrollmentCertificateTemplateDisplayName) -join ""
 
 #Configure Domain Controller Certificates
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yagmurs/wh4b/master/certificate-templates/wh4b-adcs-dc-template.json" -OutFile "$deploymentSource\wh4b-adcs-dc-template.json"
 New-ADCSTemplate -DisplayName $dcCertificateTemplateDisplayName -JSON (Get-Content -Path $deploymentSource\wh4b-adcs-dc-template.json -Raw) -Identity "$domainNetBIOS\domain controllers" -AutoEnroll
 
 #Configure WH4B User Certificates
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yagmurs/wh4b/master/certificate-templates/wh4b-adcs-wh4b-template.json" -OutFile "$deploymentSource\wh4b-adcs-dc-template.json"
-New-ADCSTemplate -DisplayName $wh4bCertificateTemplateDisplayName -JSON (Get-Content -Path $deploymentSource\wh4b-adcs-wh4b-template.json -Raw) -Identity "$domainNetBIOS\Windows Hello for Business Users"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yagmurs/wh4b/master/certificate-templates/wh4b-adcs-wh4b-user-template.json" -OutFile "$deploymentSource\wh4b-adcs-wh4b-user-template.json"
+New-ADCSTemplate -DisplayName $wh4bUserCertificateTemplateDisplayName -JSON (Get-Content -Path $deploymentSource\wh4b-adcs-wh4b-user-template.json -Raw) -Identity "$domainNetBIOS\Windows Hello for Business Users"
 
+#Configure WH4B Enrollment Certificates
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yagmurs/wh4b/master/certificate-templates/wh4b-adcs-wh4b-enrollment-template.json" -OutFile "$deploymentSource\wh4b-adcs-wh4b-enrollment-template.json"
+New-ADCSTemplate -DisplayName $wh4bEnrollmentCertificateTemplateDisplayName -JSON (Get-Content -Path $deploymentSource\wh4b-adcs-wh4b-enrollment-template.json -Raw) -Identity "$domainNetBIOS\Windows Hello for Business Users"
 
 
 
