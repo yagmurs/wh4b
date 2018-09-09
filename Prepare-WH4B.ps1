@@ -72,10 +72,10 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yagmurs/wh4b/master/re
 New-ADCSTemplate -DisplayName $wh4bEnrollmentCertificateTemplateDisplayName -JSON (Get-Content -Path $deploymentSource\wh4b-adcs-wh4b-enrollment-template.json -Raw) -Identity "$groupManagedServiceAccount"
 
 
-
 #Superseding the existing Domain Controller Certificate
 Read-Host "Superseed following certificate templates on $dcCertificateTemplateDisplayName.... Kerberos Authentication, Domain Controller, and Domain Controller Authentication"
 #Unpublish Superseded Certificate Templates
+Read-Host "Unpublish Kerberos Authentication, Domain Controller, and Domain Controller Authentication templates"
 Enter-PSSession -ComputerName $caServerNameDC
 Get-CaTemplate
 Remove-CAtemplate -Name "KerberosAuthentication"
@@ -90,7 +90,7 @@ Enter-PSSession -ComputerName $caServerNameWH4B
 Add-CATemplate -Name $wh4bUserCertificateTemplateName -Confirm:$false
 Add-CATemplate -Name $wh4bEnrollmentCertificateTemplateName -Confirm:$false
 exit
-Write-Host "Publish Domain Controller Authentication (Kerberos) template to appropriate CAs."
+#Write-Host "Published Domain Controller Authentication (Kerberos) template to appropriate CAs."
 
 
 #Configure an Internal Web Server Certificate template (Optional)
@@ -116,11 +116,30 @@ Add-KdsRootKey -EffectiveTime (Get-Date).AddHours(-10)
 Enter-PSSession -ComputerName $adfsServerName
 Install-WindowsFeature Adfs-Federation –IncludeManagementTools
 Install-AdfsFarm -CertificateThumbprint $certificateThumbprint -FederationServiceName $federationServiceName -GroupServiceAccountIdentifier $groupManagedServiceAccount
+#Enable Device Registration
+Enable-AdfsDeviceRegistration 
 exit
+
+certutil –dsTemplate $wh4bUserCertificateTemplateName msPKI-Private-Key-Flag +CTPRIVATEKEY_FLAG_HELLO_LOGON_KEY
+Set-AdfsCertificateAuthority -EnrollmentAgent -EnrollmentAgentCertificateTemplate $wh4bEnrollmentCertificateTemplateName -WindowsHelloCertificateTemplate $wh4bUserCertificateTemplateName
+
 #Add ADFS Service account to groups
 $gmsaString = ($groupManagedServiceAccount.Split("\")[1]).replace("$","")
 $gmsaObject = Get-ADObject -Filter 'name -eq $gmsaString'
 Add-ADGroupMember - identity "KeyCredentialAdmins" -Members $gmsaObject
 Add-ADGroupMember - identity "WH4BUsers" -Members $gmsaObject
+
+#Configure Permissions for Key Registration
+#Open Active Directory Users and Computers.
+#Right-click your domain name from the navigation pane and click Properties.
+#Click Security (if the Security tab is missing, turn on Advanced Features from the View menu).
+#Click Advanced. Click Add. Click Select a principal.
+#The Select User, Computer, Service Account, or Group dialog box appears. In the Enter the object name to select text box, type KeyCredential Admins. Click OK.
+#In the Applies to list box, select Descendant User objects.
+#Using the scroll bar, scroll to the bottom of the page and click Clear all.
+#In the Properties section, select Read msDS-KeyCredentialLink and Write msDS-KeyCredentialLink.
+#Click OK three times to complete the task.
+
+
 #Validate and Deploy Multifactor Authentication Services (MFA)
 #Configure Windows Hello for Business Policy settings
