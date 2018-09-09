@@ -11,6 +11,9 @@ $domainDistinguishedName = "DC=" + ($domainFQDN.Split(".") -join ",DC=")
 $domainNetBIOS = $domainFQDN.Split(".")[0]
 $caServerName = "ca1.$domainFQDN"
 $adfsServerName = "adfs1.$domainFQDN"
+$certificateThumbprint = ""
+$federationServiceName = "sts.corp.contoso.com"
+$groupManagedServiceAccount = "CONTOSO\gmsa_ADFS"
 
 #Create the KeyCredential Admins Security Global Group
 $keyCredentialGroupOUdn = "CN=Users,$domainDistinguishedName"
@@ -82,9 +85,6 @@ Read-Host "Import ADFS Service Communication certificate to ADFS server."
 #Group Manages Service Account creation
 Add-KdsRootKey -EffectiveTime (Get-Date).AddHours(-10)
 #Import Certificate to ADFS Server
-$certificateThumbprint = ""
-$federationServiceName = "sts.corp.contoso.com"
-$groupManagedServiceAccount = "CONTOSO\gmsa_ADFS"
 Install-WindowsFeature Adfs-Federation –IncludeManagementTools
 Install-AdfsFarm -CertificateThumbprint $certificateThumbprint -FederationServiceName $federationServiceName -GroupServiceAccountIdentifier $groupManagedServiceAccount
 
