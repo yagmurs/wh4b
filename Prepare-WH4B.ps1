@@ -26,12 +26,16 @@ $federationServiceName = "sts.toynak.club"
 $groupManagedServiceAccount = "corp\gmsa_ADFS$"
 
 #Create the KeyCredential Admins Security Global Group
+$kcaGroupName= "Key Credential Admins"
+$kcaGroupSAMAccountName= "KeyCredentialAdmins"
 $keyCredentialGroupOUdn = "CN=Users,$domainDistinguishedName"
-New-ADGroup -Name "Key Credential Admins" -SamAccountName KeyCredentialAdmins -GroupCategory Security -GroupScope Global -DisplayName "Key Credential Admins" -Path $keyCredentialGroupOUdn -Description "Members of this group can add and remove WH4B keys."
+New-ADGroup -Name $kcaGroupName -SamAccountName $kcaGroupSAMAccountName -GroupCategory Security -GroupScope Global -DisplayName $kcaGroupName -Path $keyCredentialGroupOUdn -Description "Members of this group can add and remove WH4B keys."
 
 #Create the Windows Hello for Business Users Security Global Group
+$wh4bUsersGroupName="Windows Hello for Business Users"
+$wh4bUsersGroupSAMAccountName = "WH4BUsers"
 $wH4BUsersGroupOUdn = "CN=Users,$domainDistinguishedName"
-New-ADGroup -Name "Windows Hello for Business Users" -SamAccountName WH4BUsers -GroupCategory Security -GroupScope Global -DisplayName "Windows Hello for Business Users" -Path $wH4BUsersGroupOUdn -Description "Members of this group will be enabled for Windows Hello for Business"
+New-ADGroup -Name $wh4bUsersGroupName -SamAccountName $wh4bUsersGroupSAMAccountName -GroupCategory Security -GroupScope Global -DisplayName $wh4bUsersGroupName -Path $wH4BUsersGroupOUdn -Description "Members of this group will be enabled for Windows Hello for Business"
 
 #Install the Active Directory Certificate Services role
 Add-WindowsFeature Adcs-Cert-Authority –IncludeManagementTools
@@ -116,10 +120,15 @@ Add-KdsRootKey -EffectiveTime (Get-Date).AddHours(-10)
 Enter-PSSession -ComputerName $adfsServerName
 Install-WindowsFeature Adfs-Federation –IncludeManagementTools
 Install-AdfsFarm -CertificateThumbprint $certificateThumbprint -FederationServiceName $federationServiceName -GroupServiceAccountIdentifier $groupManagedServiceAccount
+
+#Add Farm Node
+Add-ADFSFarmNode -PrimaryComputerName "servername" -GroupServiceAccountIdentifier $groupManagedServiceAccount -CertificateThumbprint $certificateThumbprint -OverwriteConfiguration
+
 #Enable Device Registration
 Enable-AdfsDeviceRegistration 
 exit
 
+#Enable ADFS Certificate Authority
 certutil –dsTemplate $wh4bUserCertificateTemplateName msPKI-Private-Key-Flag +CTPRIVATEKEY_FLAG_HELLO_LOGON_KEY
 Set-AdfsCertificateAuthority -EnrollmentAgent -EnrollmentAgentCertificateTemplate $wh4bEnrollmentCertificateTemplateName -WindowsHelloCertificateTemplate $wh4bUserCertificateTemplateName
 
